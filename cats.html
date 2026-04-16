@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>고양이 세계</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #1a1a2e;
+      color: #eee;
+      font-family: 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* 별 배경 */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 10% 20%, white, transparent),
+        radial-gradient(1px 1px at 30% 60%, white, transparent),
+        radial-gradient(1px 1px at 50% 10%, white, transparent),
+        radial-gradient(1px 1px at 70% 80%, white, transparent),
+        radial-gradient(1px 1px at 85% 35%, white, transparent),
+        radial-gradient(1px 1px at 20% 90%, white, transparent),
+        radial-gradient(1px 1px at 60% 50%, white, transparent),
+        radial-gradient(1px 1px at 95% 15%, white, transparent);
+      pointer-events: none;
+    }
+
+    header {
+      text-align: center;
+      padding: 60px 20px 40px;
+    }
+
+    header h1 {
+      font-size: 3rem;
+      color: #f4a261;
+      text-shadow: 0 0 20px rgba(244,162,97,0.5);
+      margin-bottom: 10px;
+    }
+
+    header p {
+      font-size: 1.1rem;
+      color: #a8a8c0;
+    }
+
+    /* 달 */
+    .moon {
+      position: fixed;
+      top: 40px;
+      right: 80px;
+      width: 80px;
+      height: 80px;
+      background: radial-gradient(circle at 35% 35%, #fffde7, #f9c74f);
+      border-radius: 50%;
+      box-shadow: 0 0 40px rgba(249,199,79,0.4);
+      z-index: 0;
+    }
+
+    /* SVG 고양이 */
+    .cat-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 40px;
+      padding: 20px 40px 60px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .cat-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 30px 24px 20px;
+      width: 200px;
+      text-align: center;
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+    }
+
+    .cat-card:hover {
+      transform: translateY(-10px) scale(1.03);
+      box-shadow: 0 20px 40px rgba(244,162,97,0.25);
+    }
+
+    .cat-card svg {
+      width: 120px;
+      height: 120px;
+    }
+
+    .cat-card .name {
+      margin-top: 14px;
+      font-size: 1rem;
+      font-weight: bold;
+      color: #f4a261;
+    }
+
+    .cat-card .meow {
+      font-size: 0.8rem;
+      color: #a8a8c0;
+      margin-top: 4px;
+    }
+
+    /* 고양이 색상 테마 */
+    .cat-orange .body-color { fill: #e07b39; }
+    .cat-orange .ear-inner  { fill: #f9b17a; }
+    .cat-orange .face       { fill: #f4a261; }
+
+    .cat-gray .body-color { fill: #7b8794; }
+    .cat-gray .ear-inner  { fill: #b0bec5; }
+    .cat-gray .face       { fill: #90a4ae; }
+
+    .cat-black .body-color { fill: #2c2c3a; }
+    .cat-black .ear-inner  { fill: #4a4a5a; }
+    .cat-black .face       { fill: #3a3a4a; }
+
+    .cat-white .body-color { fill: #e8e8f0; }
+    .cat-white .ear-inner  { fill: #ffc0cb; }
+    .cat-white .face       { fill: #f5f5ff; }
+
+    .cat-calico .body-color { fill: #c8956c; }
+    .cat-calico .ear-inner  { fill: #f4c89e; }
+    .cat-calico .face       { fill: #d4a07a; }
+
+    /* 발소리 섹션 */
+    .paw-track {
+      text-align: center;
+      padding: 10px 0 50px;
+      font-size: 2rem;
+      letter-spacing: 8px;
+      animation: walkAcross 8s linear infinite;
+      white-space: nowrap;
+    }
+
+    @keyframes walkAcross {
+      0%   { transform: translateX(-120%); }
+      100% { transform: translateX(120vw); }
+    }
+
+    /* 말풍선 */
+    .speech-bubble {
+      position: relative;
+      background: rgba(244,162,97,0.15);
+      border: 1px solid rgba(244,162,97,0.4);
+      border-radius: 16px;
+      padding: 16px 24px;
+      max-width: 500px;
+      margin: 0 auto 60px;
+      text-align: center;
+      font-size: 1.1rem;
+      color: #f4a261;
+    }
+
+    .speech-bubble::after {
+      content: '▼';
+      position: absolute;
+      bottom: -22px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(244,162,97,0.4);
+      font-size: 1.2rem;
+    }
+
+    /* tail wag animation for hovered cat */
+    @keyframes tailWag {
+      0%, 100% { transform: rotate(0deg); }
+      25%       { transform: rotate(15deg); }
+      75%       { transform: rotate(-15deg); }
+    }
+
+    .cat-card:hover .tail {
+      transform-origin: 70% 60%;
+      animation: tailWag 0.4s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 90%, 100% { transform: scaleY(1); }
+      95%            { transform: scaleY(0.1); }
+    }
+
+    .eye {
+      animation: blink 4s ease-in-out infinite;
+      transform-origin: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="moon"></div>
+
+  <header>
+    <h1>🐱 고양이 세계</h1>
+    <p>야옹이들이 기다리고 있어요</p>
+  </header>
+
+  <div class="speech-bubble">
+    카드 위에 마우스를 올려보세요 — 꼬리가 흔들려요!
+  </div>
+
+  <div class="cat-container">
+
+    <!-- 오렌지 고양이 -->
+    <div class="cat-card cat-orange">
+      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <!-- 꼬리 -->
+        <path class="body-color tail" d="M85,85 Q110,70 105,50 Q100,35 90,40 Q95,55 88,72 Z"/>
+        <!-- 몸 -->
+        <ellipse class="body-color" cx="60" cy="82" rx="32" ry="26"/>
+        <!-- 귀 -->
+        <polygon class="body-color" points="30,42 22,18 42,30"/>
+        <polygon class="body-color" points="90,42 98,18 78,30"/>
+        <polygon class="ear-inner" points="32,40 26,23 40,32"/>
+        <polygon class="ear-inner" points="88,40 94,23 80,32"/>
+        <!-- 얼굴 -->
+        <circle class="face" cx="60" cy="50" r="28"/>
+        <!-- 눈 -->
+        <g class="eye"><ellipse cx="48" cy="47" rx="6" ry="7" fill="#2c2c3a"/><circle cx="46" cy="45" r="2" fill="white"/></g>
+        <g class="eye"><ellipse cx="72" cy="47" rx="6" ry="7" fill="#2c2c3a"/><circle cx="70" cy="45" r="2" fill="white"/></g>
+        <!-- 코 -->
+        <polygon points="60,54 57,58 63,58" fill="#e07060"/>
+        <!-- 입 -->
+        <path d="M57,58 Q60,63 63,58" fill="none" stroke="#c05040" stroke-width="1.5"/>
+        <!-- 수염 -->
+        <line x1="25" y1="55" x2="50" y2="57" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+        <line x1="25" y1="60" x2="50" y2="59" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+        <line x1="70" y1="57" x2="95" y2="55" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+        <line x1="70" y1="59" x2="95" y2="60" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+      </svg>
+      <div class="name">치즈</div>
+      <div class="meow">야옹 ~ 🧀</div>
+    </div>
+
+    <!-- 회색 고양이 -->
+    <div class="cat-card cat-gray">
+      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <path class="body-color tail" d="M85,85 Q110,70 105,50 Q100,35 90,40 Q95,55 88,72 Z"/>
+        <ellipse class="body-color" cx="60" cy="82" rx="32" ry="26"/>
+        <polygon class="body-color" points="30,42 22,18 42,30"/>
+        <polygon class="body-color" points="90,42 98,18 78,30"/>
+        <polygon class="ear-inner" points="32,40 26,23 40,32"/>
+        <polygon class="ear-inner" points="88,40 94,23 80,32"/>
+        <circle class="face" cx="60" cy="50" r="28"/>
+        <g class="eye"><ellipse cx="48" cy="47" rx="6" ry="7" fill="#1a237e"/><circle cx="46" cy="45" r="2" fill="white"/></g>
+        <g class="eye"><ellipse cx="72" cy="47" rx="6" ry="7" fill="#1a237e"/><circle cx="70" cy="45" r="2" fill="white"/></g>
+        <polygon points="60,54 57,58 63,58" fill="#e07060"/>
+        <path d="M57,58 Q60,63 63,58" fill="none" stroke="#c05040" stroke-width="1.5"/>
+        <line x1="25" y1="55" x2="50" y2="57" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+        <line x1="25" y1="60" x2="50" y2="59" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+        <line x1="70" y1="57" x2="95" y2="55" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+        <line x1="70" y1="59" x2="95" y2="60" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+      </svg>
+      <div class="name">회색이</div>
+      <div class="meow">냐옹 ~ 🌙</div>
+    </div>
+
+    <!-- 검은 고양이 -->
+    <div class="cat-card cat-black">
+      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <path class="body-color tail" d="M85,85 Q110,70 105,50 Q100,35 90,40 Q95,55 88,72 Z"/>
+        <ellipse class="body-color" cx="60" cy="82" rx="32" ry="26"/>
+        <polygon class="body-color" points="30,42 22,18 42,30"/>
+        <polygon class="body-color" points="90,42 98,18 78,30"/>
+        <polygon class="ear-inner" points="32,40 26,23 40,32"/>
+        <polygon class="ear-inner" points="88,40 94,23 80,32"/>
+        <circle class="face" cx="60" cy="50" r="28"/>
+        <g class="eye"><ellipse cx="48" cy="47" rx="6" ry="7" fill="#ffeb3b"/><circle cx="46" cy="45" r="2" fill="white"/></g>
+        <g class="eye"><ellipse cx="72" cy="47" rx="6" ry="7" fill="#ffeb3b"/><circle cx="70" cy="45" r="2" fill="white"/></g>
+        <polygon points="60,54 57,58 63,58" fill="#e07060"/>
+        <path d="M57,58 Q60,63 63,58" fill="none" stroke="#c05040" stroke-width="1.5"/>
+        <line x1="25" y1="55" x2="50" y2="57" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+        <line x1="25" y1="60" x2="50" y2="59" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+        <line x1="70" y1="57" x2="95" y2="55" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+        <line x1="70" y1="59" x2="95" y2="60" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+      </svg>
+      <div class="name">블랙이</div>
+      <div class="meow">야옹 ~ ✨</div>
+    </div>
+
+    <!-- 흰 고양이 -->
+    <div class="cat-card cat-white">
+      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <path class="body-color tail" d="M85,85 Q110,70 105,50 Q100,35 90,40 Q95,55 88,72 Z"/>
+        <ellipse class="body-color" cx="60" cy="82" rx="32" ry="26"/>
+        <polygon class="body-color" points="30,42 22,18 42,30"/>
+        <polygon class="body-color" points="90,42 98,18 78,30"/>
+        <polygon class="ear-inner" points="32,40 26,23 40,32"/>
+        <polygon class="ear-inner" points="88,40 94,23 80,32"/>
+        <circle class="face" cx="60" cy="50" r="28"/>
+        <g class="eye"><ellipse cx="48" cy="47" rx="6" ry="7" fill="#42a5f5"/><circle cx="46" cy="45" r="2" fill="white"/></g>
+        <g class="eye"><ellipse cx="72" cy="47" rx="6" ry="7" fill="#42a5f5"/><circle cx="70" cy="45" r="2" fill="white"/></g>
+        <polygon points="60,54 57,58 63,58" fill="#e07060"/>
+        <path d="M57,58 Q60,63 63,58" fill="none" stroke="#c05040" stroke-width="1.5"/>
+        <line x1="25" y1="55" x2="50" y2="57" stroke="rgba(100,100,120,0.5)" stroke-width="1"/>
+        <line x1="25" y1="60" x2="50" y2="59" stroke="rgba(100,100,120,0.5)" stroke-width="1"/>
+        <line x1="70" y1="57" x2="95" y2="55" stroke="rgba(100,100,120,0.5)" stroke-width="1"/>
+        <line x1="70" y1="59" x2="95" y2="60" stroke="rgba(100,100,120,0.5)" stroke-width="1"/>
+      </svg>
+      <div class="name">하양이</div>
+      <div class="meow">냐옹 ~ ❄️</div>
+    </div>
+
+    <!-- 삼색 고양이 -->
+    <div class="cat-card cat-calico">
+      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <path class="body-color tail" d="M85,85 Q110,70 105,50 Q100,35 90,40 Q95,55 88,72 Z"/>
+        <ellipse class="body-color" cx="60" cy="82" rx="32" ry="26"/>
+        <!-- 삼색 패치 -->
+        <ellipse fill="#2c2c3a" opacity="0.5" cx="45" cy="78" rx="12" ry="10"/>
+        <ellipse fill="#e8e8f0" opacity="0.4" cx="72" cy="85" rx="10" ry="9"/>
+        <polygon class="body-color" points="30,42 22,18 42,30"/>
+        <polygon class="body-color" points="90,42 98,18 78,30"/>
+        <polygon class="ear-inner" points="32,40 26,23 40,32"/>
+        <polygon class="ear-inner" points="88,40 94,23 80,32"/>
+        <circle class="face" cx="60" cy="50" r="28"/>
+        <!-- 삼색 얼굴 패치 -->
+        <path fill="#2c2c3a" opacity="0.3" d="M32,38 Q45,30 50,50 Q40,58 30,52 Z"/>
+        <g class="eye"><ellipse cx="48" cy="47" rx="6" ry="7" fill="#388e3c"/><circle cx="46" cy="45" r="2" fill="white"/></g>
+        <g class="eye"><ellipse cx="72" cy="47" rx="6" ry="7" fill="#388e3c"/><circle cx="70" cy="45" r="2" fill="white"/></g>
+        <polygon points="60,54 57,58 63,58" fill="#e07060"/>
+        <path d="M57,58 Q60,63 63,58" fill="none" stroke="#c05040" stroke-width="1.5"/>
+        <line x1="25" y1="55" x2="50" y2="57" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+        <line x1="25" y1="60" x2="50" y2="59" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+        <line x1="70" y1="57" x2="95" y2="55" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+        <line x1="70" y1="59" x2="95" y2="60" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+      </svg>
+      <div class="name">삼색이</div>
+      <div class="meow">야옹 ~ 🍀</div>
+    </div>
+
+  </div>
+
+  <!-- 발자국 애니메이션 -->
+  <div class="paw-track">🐾 🐾 🐾 🐾 🐾</div>
+
+</body>
+</html>

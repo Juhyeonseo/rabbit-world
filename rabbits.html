@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>토끼 세계</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0d1b2a;
+      color: #eee;
+      font-family: 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* 풀밭 배경 */
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 120px;
+      background: linear-gradient(to top, #1a4a2e, transparent);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* 별 */
+    .stars {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 3s ease-in-out infinite;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; transform: scale(1); }
+      50%       { opacity: 1;   transform: scale(1.4); }
+    }
+
+    /* 달 */
+    .moon {
+      position: fixed;
+      top: 50px;
+      right: 100px;
+      width: 90px;
+      height: 90px;
+      background: radial-gradient(circle at 35% 35%, #fffde7, #f9c74f);
+      border-radius: 50%;
+      box-shadow: 0 0 50px rgba(249,199,79,0.45);
+      z-index: 1;
+    }
+
+    /* 달 토끼 실루엣 */
+    .moon-rabbit {
+      position: absolute;
+      top: 22px;
+      left: 18px;
+      width: 52px;
+      height: 52px;
+      opacity: 0.25;
+    }
+
+    header {
+      text-align: center;
+      padding: 70px 20px 30px;
+      position: relative;
+      z-index: 2;
+    }
+
+    header h1 {
+      font-size: 3rem;
+      color: #b5e4fc;
+      text-shadow: 0 0 24px rgba(181,228,252,0.5);
+      margin-bottom: 10px;
+    }
+
+    header p {
+      font-size: 1.1rem;
+      color: #7ab0cc;
+    }
+
+    /* 말풍선 */
+    .speech-bubble {
+      position: relative;
+      background: rgba(181,228,252,0.1);
+      border: 1px solid rgba(181,228,252,0.3);
+      border-radius: 16px;
+      padding: 14px 28px;
+      max-width: 480px;
+      margin: 0 auto 50px;
+      text-align: center;
+      font-size: 1rem;
+      color: #b5e4fc;
+      z-index: 2;
+    }
+    .speech-bubble::after {
+      content: '▼';
+      position: absolute;
+      bottom: -22px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(181,228,252,0.3);
+    }
+
+    /* 카드 그리드 */
+    .rabbit-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 40px;
+      padding: 20px 40px 80px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .rabbit-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      padding: 30px 20px 20px;
+      width: 190px;
+      text-align: center;
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+    }
+
+    .rabbit-card:hover {
+      transform: translateY(-12px) scale(1.04);
+      box-shadow: 0 24px 48px rgba(181,228,252,0.2);
+    }
+
+    .rabbit-card svg {
+      width: 130px;
+      height: 150px;
+    }
+
+    .rabbit-card .name {
+      margin-top: 12px;
+      font-size: 1rem;
+      font-weight: bold;
+      color: #b5e4fc;
+    }
+
+    .rabbit-card .sound {
+      font-size: 0.82rem;
+      color: #7ab0cc;
+      margin-top: 4px;
+    }
+
+    /* 귀 흔들기 */
+    @keyframes earWiggle {
+      0%, 100% { transform: rotate(0deg); }
+      25%       { transform: rotate(-12deg); }
+      75%       { transform: rotate(8deg); }
+    }
+
+    .rabbit-card:hover .ear-left {
+      transform-origin: 50% 100%;
+      animation: earWiggle 0.45s ease-in-out infinite;
+    }
+    .rabbit-card:hover .ear-right {
+      transform-origin: 50% 100%;
+      animation: earWiggle 0.45s ease-in-out infinite reverse;
+    }
+
+    /* 눈 깜빡 */
+    @keyframes blink {
+      0%, 88%, 100% { transform: scaleY(1); }
+      94%            { transform: scaleY(0.08); }
+    }
+    .eye {
+      animation: blink 4.5s ease-in-out infinite;
+      transform-origin: center;
+    }
+
+    /* 점프 */
+    @keyframes jump {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-8px); }
+    }
+
+    /* 달리는 토끼 */
+    .running-rabbit {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      font-size: 2.4rem;
+      padding-bottom: 50px;
+      animation: runAcross 7s linear infinite;
+      white-space: nowrap;
+      display: inline-block;
+      width: 100%;
+    }
+    @keyframes runAcross {
+      0%   { transform: translateX(-150px); }
+      100% { transform: translateX(110vw); }
+    }
+
+    /* 꽃 장식 */
+    .flowers {
+      text-align: center;
+      font-size: 1.6rem;
+      letter-spacing: 18px;
+      padding-bottom: 30px;
+      position: relative;
+      z-index: 2;
+      opacity: 0.7;
+    }
+
+    /* 모달 오버레이 */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    /* 모달 카드 */
+    .modal {
+      background: #0f2235;
+      border: 1px solid rgba(181,228,252,0.3);
+      border-radius: 28px;
+      padding: 40px 36px 32px;
+      max-width: 360px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+      animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes popIn {
+      from { transform: scale(0.7); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 14px;
+      right: 18px;
+      background: none;
+      border: none;
+      color: #7ab0cc;
+      font-size: 1.4rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .modal-close:hover { color: #b5e4fc; }
+
+    .modal svg {
+      width: 100px;
+      height: 115px;
+    }
+
+    .modal .modal-name {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #b5e4fc;
+      margin: 12px 0 4px;
+    }
+
+    .modal .modal-tag {
+      font-size: 0.85rem;
+      color: #7ab0cc;
+      margin-bottom: 18px;
+    }
+
+    .modal .modal-intro {
+      background: rgba(181,228,252,0.07);
+      border-left: 3px solid rgba(181,228,252,0.4);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: #cde8f8;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 별 -->
+  <div class="stars" id="stars"></div>
+
+  <!-- 달 -->
+  <div class="moon">
+    <!-- 달 위 토끼 실루엣 (SVG) -->
+    <svg class="moon-rabbit" viewBox="0 0 52 52" fill="#7a5500">
+      <!-- 귀 -->
+      <ellipse cx="17" cy="14" rx="5" ry="12" fill="#7a5500"/>
+      <ellipse cx="30" cy="12" rx="5" ry="13" fill="#7a5500"/>
+      <!-- 몸 -->
+      <ellipse cx="23" cy="36" rx="14" ry="12" fill="#7a5500"/>
+      <!-- 머리 -->
+      <circle cx="23" cy="24" r="11" fill="#7a5500"/>
+    </svg>
+  </div>
+
+  <header>
+    <h1>🐰 토끼 세계</h1>
+    <p>달빛 아래 모인 토끼 친구들</p>
+  </header>
+
+  <div class="speech-bubble">
+    카드 위에 마우스를 올려보세요 — 귀가 쫑긋해요!
+  </div>
+
+  <div class="rabbit-container">
+
+    <!-- 흰 토끼 -->
+    <div class="rabbit-card" data-id="somi">
+      <svg viewBox="0 0 130 150" xmlns="http://www.w3.org/2000/svg">
+        <!-- 귀 왼쪽 -->
+        <g class="ear-left">
+          <ellipse cx="42" cy="30" rx="10" ry="28" fill="#e8e8f5"/>
+          <ellipse cx="42" cy="32" rx="5"  ry="21" fill="#ffb6c1"/>
+        </g>
+        <!-- 귀 오른쪽 -->
+        <g class="ear-right">
+          <ellipse cx="88" cy="28" rx="10" ry="28" fill="#e8e8f5"/>
+          <ellipse cx="88" cy="30" rx="5"  ry="21" fill="#ffb6c1"/>
+        </g>
+        <!-- 몸 -->
+        <ellipse cx="65" cy="115" rx="36" ry="28" fill="#e8e8f5"/>
+        <!-- 꼬리 -->
+        <circle cx="98" cy="120" r="9" fill="#f5f5ff"/>
+        <!-- 머리 -->
+        <circle cx="65" cy="72" r="32" fill="#f0f0ff"/>
+        <!-- 눈 -->
+        <g class="eye"><ellipse cx="52" cy="68" rx="7" ry="7.5" fill="#e91e8c"/><circle cx="50" cy="66" r="2.5" fill="white"/></g>
+        <g class="eye"><ellipse cx="78" cy="68" rx="7" ry="7.5" fill="#e91e8c"/><circle cx="76" cy="66" r="2.5" fill="white"/></g>
+        <!-- 코 -->
+        <ellipse cx="65" cy="77" rx="4" ry="3" fill="#f48fb1"/>
+        <!-- 입 -->
+        <path d="M61,80 Q65,85 69,80" fill="none" stroke="#d4688a" stroke-width="1.5" stroke-linecap="round"/>
+        <!-- 수염 -->
+        <line x1="20" y1="74" x2="55" y2="76" stroke="rgba(150,150,180,0.6)" stroke-width="1"/>
+        <line x1="20" y1="80" x2="55" y2="79" stroke="rgba(150,150,180,0.6)" stroke-width="1"/>
+        <line x1="75" y1="76" x2="110" y2="74" stroke="rgba(150,150,180,0.6)" stroke-width="1"/>
+        <line x1="75" y1="79" x2="110" y2="80" stroke="rgba(150,150,180,0.6)" stroke-width="1"/>
+        <!-- 앞발 -->
+        <ellipse cx="45" cy="135" rx="11" ry="7" fill="#e0e0f0"/>
+        <ellipse cx="85" cy="135" rx="11" ry="7" fill="#e0e0f0"/>
+      </svg>
+      <div class="name">솜이</div>
+      <div class="sound">빙긋 🤍</div>
+    </div>
+
+    <!-- 회색 토끼 -->
+    <div class="rabbit-card" data-id="gurum">
+      <svg viewBox="0 0 130 150" xmlns="http://www.w3.org/2000/svg">
+        <g class="ear-left">
+          <ellipse cx="42" cy="30" rx="10" ry="28" fill="#90a4ae"/>
+          <ellipse cx="42" cy="32" rx="5"  ry="21" fill="#ffb6c1"/>
+        </g>
+        <g class="ear-right">
+          <ellipse cx="88" cy="28" rx="10" ry="28" fill="#90a4ae"/>
+          <ellipse cx="88" cy="30" rx="5"  ry="21" fill="#ffb6c1"/>
+        </g>
+        <ellipse cx="65" cy="115" rx="36" ry="28" fill="#90a4ae"/>
+        <circle cx="98" cy="120" r="9" fill="#b0bec5"/>
+        <circle cx="65" cy="72" r="32" fill="#9eafc0"/>
+        <g class="eye"><ellipse cx="52" cy="68" rx="7" ry="7.5" fill="#37474f"/><circle cx="50" cy="66" r="2.5" fill="white"/></g>
+        <g class="eye"><ellipse cx="78" cy="68" rx="7" ry="7.5" fill="#37474f"/><circle cx="76" cy="66" r="2.5" fill="white"/></g>
+        <ellipse cx="65" cy="77" rx="4" ry="3" fill="#f48fb1"/>
+        <path d="M61,80 Q65,85 69,80" fill="none" stroke="#d4688a" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="20" y1="74" x2="55" y2="76" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+        <line x1="20" y1="80" x2="55" y2="79" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+        <line x1="75" y1="76" x2="110" y2="74" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+        <line x1="75" y1="79" x2="110" y2="80" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+        <ellipse cx="45" cy="135" rx="11" ry="7" fill="#80909e"/>
+        <ellipse cx="85" cy="135" rx="11" ry="7" fill="#80909e"/>
+      </svg>
+      <div class="name">구름이</div>
+      <div class="sound">냠냠 🌿</div>
+    </div>
+
+    <!-- 갈색 토끼 -->
+    <div class="rabbit-card" data-id="choco">
+      <svg viewBox="0 0 130 150" xmlns="http://www.w3.org/2000/svg">
+        <g class="ear-left">
+          <ellipse cx="42" cy="30" rx="10" ry="28" fill="#a0785a"/>
+          <ellipse cx="42" cy="32" rx="5"  ry="21" fill="#ffb6c1"/>
+        </g>
+        <g class="ear-right">
+          <ellipse cx="88" cy="28" rx="10" ry="28" fill="#a0785a"/>
+          <ellipse cx="88" cy="30" rx="5"  ry="21" fill="#ffb6c1"/>
+        </g>
+        <ellipse cx="65" cy="115" rx="36" ry="28" fill="#a0785a"/>
+        <circle cx="98" cy="120" r="9" fill="#b8906e"/>
+        <circle cx="65" cy="72" r="32" fill="#b0896b"/>
+        <!-- 배 흰 부분 -->
+        <ellipse cx="65" cy="110" rx="22" ry="18" fill="#d4b49a" opacity="0.6"/>
+        <g class="eye"><ellipse cx="52" cy="68" rx="7" ry="7.5" fill="#3e2723"/><circle cx="50" cy="66" r="2.5" fill="white"/></g>
+        <g class="eye"><ellipse cx="78" cy="68" rx="7" ry="7.5" fill="#3e2723"/><circle cx="76" cy="66" r="2.5" fill="white"/></g>
+        <ellipse cx="65" cy="77" rx="4" ry="3" fill="#f48fb1"/>
+        <path d="M61,80 Q65,85 69,80" fill="none" stroke="#d4688a" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="20" y1="74" x2="55" y2="76" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+        <line x1="20" y1="80" x2="55" y2="79" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+        <line x1="75" y1="76" x2="110" y2="74" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+        <line x1="75" y1="79" x2="110" y2="80" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+        <ellipse cx="45" cy="135" rx="11" ry="7" fill="#8a6048"/>
+        <ellipse cx="85" cy="135" rx="11" ry="7" fill="#8a6048"/>
+      </svg>
+      <div class="name">초코</div>
+      <div class="sound">깡충 🍫</div>
+    </div>
+
+    <!-- 검정 토끼 -->
+    <div class="rabbit-card" data-id="byeol">
+      <svg viewBox="0 0 130 150" xmlns="http://www.w3.org/2000/svg">
+        <g class="ear-left">
+          <ellipse cx="42" cy="30" rx="10" ry="28" fill="#2c2c3a"/>
+          <ellipse cx="42" cy="32" rx="5"  ry="21" fill="#ffb6c1"/>
+        </g>
+        <g class="ear-right">
+          <ellipse cx="88" cy="28" rx="10" ry="28" fill="#2c2c3a"/>
+          <ellipse cx="88" cy="30" rx="5"  ry="21" fill="#ffb6c1"/>
+        </g>
+        <ellipse cx="65" cy="115" rx="36" ry="28" fill="#2c2c3a"/>
+        <circle cx="98" cy="120" r="9" fill="#3a3a4a"/>
+        <circle cx="65" cy="72" r="32" fill="#333344"/>
+        <g class="eye"><ellipse cx="52" cy="68" rx="7" ry="7.5" fill="#7c4dff"/><circle cx="50" cy="66" r="2.5" fill="white"/></g>
+        <g class="eye"><ellipse cx="78" cy="68" rx="7" ry="7.5" fill="#7c4dff"/><circle cx="76" cy="66" r="2.5" fill="white"/></g>
+        <ellipse cx="65" cy="77" rx="4" ry="3" fill="#f48fb1"/>
+        <path d="M61,80 Q65,85 69,80" fill="none" stroke="#d4688a" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="20" y1="74" x2="55" y2="76" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
+        <line x1="20" y1="80" x2="55" y2="79" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
+        <line x1="75" y1="76" x2="110" y2="74" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
+        <line x1="75" y1="79" x2="110" y2="80" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
+        <ellipse cx="45" cy="135" rx="11" ry="7" fill="#222230"/>
+        <ellipse cx="85" cy="135" rx="11" ry="7" fill="#222230"/>
+      </svg>
+      <div class="name">별이</div>
+      <div class="sound">반짝 ✨</div>
+    </div>
+
+    <!-- 점박이 토끼 -->
+    <div class="rabbit-card" data-id="jeomsuni">
+      <svg viewBox="0 0 130 150" xmlns="http://www.w3.org/2000/svg">
+        <g class="ear-left">
+          <ellipse cx="42" cy="30" rx="10" ry="28" fill="#e8e8f5"/>
+          <ellipse cx="42" cy="32" rx="5"  ry="21" fill="#ffb6c1"/>
+          <!-- 점 -->
+          <ellipse cx="40" cy="20" rx="4" ry="6" fill="#90a4ae" opacity="0.6"/>
+        </g>
+        <g class="ear-right">
+          <ellipse cx="88" cy="28" rx="10" ry="28" fill="#e8e8f5"/>
+          <ellipse cx="88" cy="30" rx="5"  ry="21" fill="#ffb6c1"/>
+        </g>
+        <ellipse cx="65" cy="115" rx="36" ry="28" fill="#e8e8f5"/>
+        <!-- 몸 점 -->
+        <ellipse cx="50" cy="108" rx="9" ry="10" fill="#90a4ae" opacity="0.5"/>
+        <ellipse cx="78" cy="120" rx="8" ry="7"  fill="#90a4ae" opacity="0.4"/>
+        <circle cx="98" cy="120" r="9" fill="#f0f0ff"/>
+        <circle cx="65" cy="72" r="32" fill="#f0f0ff"/>
+        <!-- 얼굴 점 -->
+        <circle cx="47" cy="60" r="5" fill="#90a4ae" opacity="0.4"/>
+        <g class="eye"><ellipse cx="52" cy="68" rx="7" ry="7.5" fill="#5c7a9e"/><circle cx="50" cy="66" r="2.5" fill="white"/></g>
+        <g class="eye"><ellipse cx="78" cy="68" rx="7" ry="7.5" fill="#5c7a9e"/><circle cx="76" cy="66" r="2.5" fill="white"/></g>
+        <ellipse cx="65" cy="77" rx="4" ry="3" fill="#f48fb1"/>
+        <path d="M61,80 Q65,85 69,80" fill="none" stroke="#d4688a" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="20" y1="74" x2="55" y2="76" stroke="rgba(150,150,180,0.6)" stroke-width="1"/>
+        <line x1="20" y1="80" x2="55" y2="79" stroke="rgba(150,150,180,0.6)" stroke-width="1"/>
+        <line x1="75" y1="76" x2="110" y2="74" stroke="rgba(150,150,180,0.6)" stroke-width="1"/>
+        <line x1="75" y1="79" x2="110" y2="80" stroke="rgba(150,150,180,0.6)" stroke-width="1"/>
+        <ellipse cx="45" cy="135" rx="11" ry="7" fill="#d0d0e0"/>
+        <ellipse cx="85" cy="135" rx="11" ry="7" fill="#d0d0e0"/>
+      </svg>
+      <div class="name">점순이</div>
+      <div class="sound">총총 🫧</div>
+    </div>
+
+  </div>
+
+  <!-- 자기소개 모달 -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modal">
+      <button class="modal-close" id="modalClose">✕</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <!-- 달리는 토끼 -->
+  <div style="overflow:hidden; position:relative; z-index:2; height:60px;">
+    <div class="running-rabbit"><span style="display:inline-block; transform:scaleX(-1)">🐇</span></div>
+  </div>
+
+  <!-- 꽃 장식 -->
+  <div class="flowers">🌸 🌼 🌷 🌼 🌸</div>
+
+  <script>
+    // 별 생성
+    const starsEl = document.getElementById('stars');
+    for (let i = 0; i < 60; i++) {
+      const s = document.createElement('div');
+      s.className = 'star';
+      const size = Math.random() * 2.5 + 0.5;
+      s.style.cssText = `
+        width:${size}px; height:${size}px;
+        top:${Math.random()*80}%;
+        left:${Math.random()*100}%;
+        animation-delay:${Math.random()*4}s;
+        animation-duration:${2+Math.random()*3}s;
+      `;
+      starsEl.appendChild(s);
+    }
+
+    // 토끼 자기소개 데이터
+    const rabbitData = {
+      somi: {
+        svgColors: { body: '#e8e8f5', earInner: '#ffb6c1', face: '#f0f0ff', eye: '#e91e8c', paw: '#e0e0f0' },
+        name: '솜이',
+        tag: '흰 토끼 · 2살 · ♀',
+        intro: `안녕하세요, 저는 솜이예요! 🤍\n이름처럼 솜처럼 보드랍고 포근한 토끼랍니다.\n당근 케이크를 제일 좋아하고,\n달빛 아래에서 낮잠 자는 게 취미예요.\n처음 만나는 친구한테도 먼저 다가가는\n사교적인 성격이에요!`
+      },
+      gurum: {
+        svgColors: { body: '#90a4ae', earInner: '#ffb6c1', face: '#9eafc0', eye: '#37474f', paw: '#80909e' },
+        name: '구름이',
+        tag: '회색 토끼 · 3살 · ♂',
+        intro: `안녕! 나는 구름이야 🌿\n하늘에 떠다니는 구름처럼 자유롭게\n살고 싶은 토끼야.\n클로버 잎 찾는 걸 엄청 잘해서\n친구들한테 인기 많아.\n비 오는 날 흙냄새 맡으면서\n뛰어다니는 걸 제일 좋아해!`
+      },
+      choco: {
+        svgColors: { body: '#a0785a', earInner: '#ffb6c1', face: '#b0896b', eye: '#3e2723', paw: '#8a6048' },
+        name: '초코',
+        tag: '갈색 토끼 · 1살 · ♂',
+        intro: `반가워요, 저 초코예요~ 🍫\n이름처럼 달달한 성격을 가졌어요!\n초콜릿색 털이 자랑이고,\n점프 실력은 우리 무리에서 최고예요.\n아직 아기 토끼라 호기심이 넘쳐서\n뭐든 일단 냄새부터 맡아봐요 ㅎㅎ\n잘 부탁드려요!`
+      },
+      byeol: {
+        svgColors: { body: '#2c2c3a', earInner: '#ffb6c1', face: '#333344', eye: '#7c4dff', paw: '#222230' },
+        name: '별이',
+        tag: '검은 토끼 · 4살 · ♀',
+        intro: `... 안녕. 나는 별이야. ✨\n밤하늘처럼 어두운 털을 가졌지만\n눈은 보라빛으로 반짝여.\n말이 많진 않지만 한번 친해지면\n엄청 다정한 토끼야.\n별 구경하면서 혼자 조용히\n앉아있는 걸 제일 좋아해.\n...같이 별 볼래?`
+      },
+      jeomsuni: {
+        svgColors: { body: '#e8e8f5', earInner: '#ffb6c1', face: '#f0f0ff', eye: '#5c7a9e', paw: '#d0d0e0' },
+        name: '점순이',
+        tag: '점박이 토끼 · 2살 · ♀',
+        intro: `안녕하세요! 저는 점순이예요 🫧\n몸에 있는 점들이 콤플렉스였는데\n이제는 제 트레이드마크랍니다!\n총총총 빠르게 달리는 게 특기고,\n물구나무서기도 할 수 있어요.\n친구들한테 재롱 피우는 걸 좋아하는\n활발한 성격이에요!`
+      }
+    };
+
+    // 모달 열기
+    document.querySelectorAll('.rabbit-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const id = card.dataset.id;
+        const data = rabbitData[id];
+        if (!data) return;
+
+        document.getElementById('modalContent').innerHTML = `
+          <div class="modal-name">${data.name}</div>
+          <div class="modal-tag">${data.tag}</div>
+          <div class="modal-intro">${data.intro.replace(/\n/g, '<br>')}</div>
+        `;
+
+        document.getElementById('modalOverlay').classList.add('active');
+      });
+    });
+
+    // 모달 닫기
+    document.getElementById('modalClose').addEventListener('click', closeModal);
+    document.getElementById('modalOverlay').addEventListener('click', e => {
+      if (e.target === document.getElementById('modalOverlay')) closeModal();
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('active');
+    }
+  </script>
+
+</body>
+</html>
