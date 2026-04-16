@@ -134,8 +134,40 @@
     }
 
     .rabbit-card:hover {
-      transform: translateY(-12px) scale(1.04);
       box-shadow: 0 24px 48px rgba(181,228,252,0.2);
+    }
+
+    /* 몸통 점프 */
+    @keyframes rabbitHop {
+      0%        { transform: translateY(0)    scaleY(1); }
+      25%        { transform: translateY(-22px) scaleY(1.06); }
+      50%        { transform: translateY(-24px) scaleY(1.06); }
+      80%        { transform: translateY(3px)  scaleY(0.86); }
+      100%       { transform: translateY(0)    scaleY(1); }
+    }
+
+    /* 발 차기 */
+    @keyframes pawKick {
+      0%        { transform: translateY(0)   rotate(0deg); }
+      25%        { transform: translateY(-14px) rotate(-25deg); }
+      50%        { transform: translateY(-16px) rotate(-25deg); }
+      80%        { transform: translateY(5px)  rotate(15deg); }
+      100%       { transform: translateY(0)   rotate(0deg); }
+    }
+
+    .rabbit-card:hover svg {
+      animation: rabbitHop 0.5s ease-in-out infinite;
+      transform-origin: bottom center;
+    }
+
+    .rabbit-card:hover .paw-left {
+      animation: pawKick 0.5s ease-in-out infinite;
+      transform-origin: center;
+    }
+
+    .rabbit-card:hover .paw-right {
+      animation: pawKick 0.5s ease-in-out infinite 0.06s;
+      transform-origin: center;
     }
 
     .rabbit-card svg {
@@ -353,8 +385,8 @@
         <line x1="75" y1="76" x2="110" y2="74" stroke="rgba(150,150,180,0.6)" stroke-width="1"/>
         <line x1="75" y1="79" x2="110" y2="80" stroke="rgba(150,150,180,0.6)" stroke-width="1"/>
         <!-- 앞발 -->
-        <ellipse cx="45" cy="135" rx="11" ry="7" fill="#e0e0f0"/>
-        <ellipse cx="85" cy="135" rx="11" ry="7" fill="#e0e0f0"/>
+        <ellipse class="paw-left"  cx="45" cy="135" rx="11" ry="7" fill="#e0e0f0"/>
+        <ellipse class="paw-right" cx="85" cy="135" rx="11" ry="7" fill="#e0e0f0"/>
       </svg>
       <div class="name">솜이</div>
       <div class="sound">빙긋 🤍</div>
@@ -382,8 +414,8 @@
         <line x1="20" y1="80" x2="55" y2="79" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
         <line x1="75" y1="76" x2="110" y2="74" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
         <line x1="75" y1="79" x2="110" y2="80" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
-        <ellipse cx="45" cy="135" rx="11" ry="7" fill="#80909e"/>
-        <ellipse cx="85" cy="135" rx="11" ry="7" fill="#80909e"/>
+        <ellipse class="paw-left"  cx="45" cy="135" rx="11" ry="7" fill="#80909e"/>
+        <ellipse class="paw-right" cx="85" cy="135" rx="11" ry="7" fill="#80909e"/>
       </svg>
       <div class="name">구름이</div>
       <div class="sound">냠냠 🌿</div>
@@ -413,8 +445,8 @@
         <line x1="20" y1="80" x2="55" y2="79" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
         <line x1="75" y1="76" x2="110" y2="74" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
         <line x1="75" y1="79" x2="110" y2="80" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
-        <ellipse cx="45" cy="135" rx="11" ry="7" fill="#8a6048"/>
-        <ellipse cx="85" cy="135" rx="11" ry="7" fill="#8a6048"/>
+        <ellipse class="paw-left"  cx="45" cy="135" rx="11" ry="7" fill="#8a6048"/>
+        <ellipse class="paw-right" cx="85" cy="135" rx="11" ry="7" fill="#8a6048"/>
       </svg>
       <div class="name">초코</div>
       <div class="sound">깡충 🍫</div>
@@ -442,8 +474,8 @@
         <line x1="20" y1="80" x2="55" y2="79" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
         <line x1="75" y1="76" x2="110" y2="74" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
         <line x1="75" y1="79" x2="110" y2="80" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
-        <ellipse cx="45" cy="135" rx="11" ry="7" fill="#222230"/>
-        <ellipse cx="85" cy="135" rx="11" ry="7" fill="#222230"/>
+        <ellipse class="paw-left"  cx="45" cy="135" rx="11" ry="7" fill="#222230"/>
+        <ellipse class="paw-right" cx="85" cy="135" rx="11" ry="7" fill="#222230"/>
       </svg>
       <div class="name">별이</div>
       <div class="sound">반짝 ✨</div>
@@ -478,8 +510,8 @@
         <line x1="20" y1="80" x2="55" y2="79" stroke="rgba(150,150,180,0.6)" stroke-width="1"/>
         <line x1="75" y1="76" x2="110" y2="74" stroke="rgba(150,150,180,0.6)" stroke-width="1"/>
         <line x1="75" y1="79" x2="110" y2="80" stroke="rgba(150,150,180,0.6)" stroke-width="1"/>
-        <ellipse cx="45" cy="135" rx="11" ry="7" fill="#d0d0e0"/>
-        <ellipse cx="85" cy="135" rx="11" ry="7" fill="#d0d0e0"/>
+        <ellipse class="paw-left"  cx="45" cy="135" rx="11" ry="7" fill="#d0d0e0"/>
+        <ellipse class="paw-right" cx="85" cy="135" rx="11" ry="7" fill="#d0d0e0"/>
       </svg>
       <div class="name">점순이</div>
       <div class="sound">총총 🫧</div>
